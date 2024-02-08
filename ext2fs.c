@@ -387,24 +387,28 @@ long ext2_blkaddr_read(uint32_t ino, uint32_t blkidx) {
 #ifdef STUDENT
 
   /* Numbers of indirect blocks */
-  uint32_t single_indirect_boundary = EXT2_NADDR + BLK_POINTERS;
+  uint32_t single_indirect_boundary = EXT2_NDADDR + BLK_POINTERS;
   uint32_t double_indirect_boundary =
     single_indirect_boundary + BLK_POINTERS * BLK_POINTERS;
+  uint32_t triple_indirect_boundary =
+    double_indirect_boundary + BLK_POINTERS * BLK_POINTERS * BLK_POINTERS;
 
   /* direct blocks */
-  if (blkidx < EXT2_NADDR) {
+  if (blkidx < EXT2_NDADDR) {
     return inode.i_blocks[blkidx];
   }
+
   /* single indirect blocks */
-  else if (blkidx < single_indirect_boundary) {
+  if (blkidx < single_indirect_boundary) {
     /* first level
      * We move blkidx as if the direct blocks didn't exist and then we calculate
      * the address. */
-    uint32_t indirect_idx = blkidx - EXT2_NADDR;
+    uint32_t indirect_idx = blkidx - EXT2_NDADDR;
     return ext2_blkptr_read(inode.i_blocks[EXT2_NDADDR], indirect_idx);
   }
+
   /* double indirect blocks */
-  else if (blkidx < double_indirect_boundary) {
+  if (blkidx < double_indirect_boundary) {
     /* first level
      * We move blkidx as if neither direct nor single indirect blocks didn't
      * exist and then we calculate in which "single bucket" we need to look
@@ -419,9 +423,10 @@ long ext2_blkaddr_read(uint32_t ino, uint32_t blkidx) {
     indirect_idx = (blkidx - single_indirect_boundary) % BLK_POINTERS;
     return ext2_blkptr_read(blkidx2, indirect_idx);
   }
+
   /* triple indirect blocks - all works as before but we move three levels. */
-  else {
-    /* first level */
+  /* first level */
+  if (blkidx < triple_indirect_boundary) {
     uint32_t indirect_idx =
       (blkidx - double_indirect_boundary) / (BLK_POINTERS * BLK_POINTERS);
     uint32_t blkidx2 =
@@ -528,7 +533,7 @@ int ext2_readdir(uint32_t ino, uint32_t *off_p, ext2_dirent_t *de) {
       panic("couldn't read the entry: %d, %d", ino, offset);
 
     /* If empty -> skip the entry. */
-    if (!de->de_ino) {
+    if (!(de->de_ino)) {
       offset += de->de_reclen;
       continue;
     }
@@ -566,9 +571,8 @@ int ext2_readlink(uint32_t ino, char *buf, size_t buflen) {
 
   /* Check if it's not a symlink
    * or
-   * if symlink size is bigger than buffer's size.
-   * Why +1? We make it NULL-terminated, so we need it a bit bigger. */
-  if (!(inode.i_mode & EXT2_IFLNK) || inode.i_size + 1 > buflen)
+   * if symlink size is bigger than buffer's size. */
+  if (!(inode.i_mode & EXT2_IFLNK) || inode.i_size > buflen)
     return EINVAL;
 
   /* Read it. */
@@ -578,7 +582,7 @@ int ext2_readlink(uint32_t ino, char *buf, size_t buflen) {
   /* Else read it from data block. */
   else {
     if (ext2_read(ino, buf, 0, inode.i_size))
-      panic("couldn't read the symlink: %d", ino);
+      return EINVAL;
   }
 
   /* Make it NULL-terminated. */
