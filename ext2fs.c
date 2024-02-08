@@ -1,3 +1,11 @@
+/*
+ * Oświadczam, że zapoznałem(-am) się z regulaminem prowadzenia zajęć
+ * i jestem świadomy(-a) konsekwencji niestosowania się do podanych tam zasad.
+ */
+#ifdef STUDENT
+/* Imię i nazwisko, numer indeksu: Maksymilian Debeściak, 123456 */
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -118,13 +126,7 @@ static blk_t *blk_alloc(void) {
   /* Initially every empty block is on free list. */
   if (!TAILQ_EMPTY(&freelst)) {
 #ifdef STUDENT
-
-    /* Get first free block from the list. */
-    blk = TAILQ_FIRST(&freelst);
-
-    /* Remove this block from the list. */
-    TAILQ_REMOVE(&freelst, blk, b_link);
-
+    /* TODO */
 #endif /* !STUDENT */
     return blk;
   }
@@ -133,19 +135,7 @@ static blk_t *blk_alloc(void) {
    * Then we'll take the last recently used entry from LRU list. */
   if (!TAILQ_EMPTY(&lrulst)) {
 #ifdef STUDENT
-
-    /* Get last block from LRU list - the least recently used one. */
-    blk = TAILQ_LAST(&lrulst, blk_list);
-
-    /* Remove this block from the list. */
-    TAILQ_REMOVE(&lrulst, blk, b_link);
-
-    /* Remove this block from buckets array. */
-    /* In which bucket is it? */
-    blk_list_t *bucket = &buckets[BUCKET(blk->b_inode, blk->b_index)];
-    /* Remove. */
-    TAILQ_REMOVE(bucket, blk, b_hash);
-
+    /* TODO */
 #endif /* !STUDENT */
     return blk;
   }
@@ -164,25 +154,7 @@ static blk_t *blk_get(uint32_t ino, uint32_t idx) {
 
   /* Locate a block in the buffer and return it if found. */
 #ifdef STUDENT
-
-  /* We want to check if we already have this data in the buffer.
-   * First, check if it is in the bucket, if yes - return it.
-   * Otherwise, after "student area" we allocate a block for it
-   * and put there the data from filesystem. */
-
-  TAILQ_FOREACH (blk, bucket, b_hash) {
-    if (blk->b_inode == ino && blk->b_index == idx) {
-      /* Found it! We need to check, if it is on LRU list. */
-      if (blk->b_refcnt == 0)
-        TAILQ_REMOVE(&lrulst, blk, b_link);
-
-      /* Increment reference count, because we reference it :D */
-      blk->b_refcnt++;
-
-      return blk;
-    }
-  }
-
+  /* TODO */
 #endif /* !STUDENT */
 
   long blkaddr = ext2_blkaddr_read(ino, idx);
@@ -230,36 +202,7 @@ int ext2_block_used(uint32_t blkaddr) {
     return EINVAL;
   int used = 0;
 #ifdef STUDENT
-
-  /* Which block group?
-   * Remember that addresses start at 1! */
-  size_t block_group = (blkaddr - 1) / blocks_per_group;
-
-  /* Get the right block bitmap from buffer (!) - so we need to use blk_get.
-   * 1st: blk_get - "When `ino` is zero the buffer refers to filesystem
-   * metadata". 2nd: "Its official location can be determined by reading the
-   * “bg_block_bitmap” in its associated group descriptor." -> so it's just an
-   * address aka our idx. */
-  blk_t *blk = blk_get(0, group_desc[block_group].gd_b_bitmap);
-
-  /* Get the raw data of this block. */
-  uint8_t *bitmap = (uint8_t *)blk->b_data;
-
-  /* Check the right bit.
-   * "Each bit represent the current state of a block within that block group,
-   * where 1 means “used” and 0 “free/available”. The first block of this block
-   * group is represented by bit 0 of byte 0, the second by bit 1 of byte 0.
-   * The 8th block is represented by bit 7 (most significant bit) of byte 0
-   * while the 9th block is represented by bit 0 (least significant bit) of
-   * byte 1." */
-  uint32_t bit_index = (blkaddr - 1) % blocks_per_group;
-  uint32_t byte_index = bit_index / 8;
-  uint8_t bit_offset = bit_index % 8;
-  used = (bitmap[byte_index] & (1 << bit_offset)) >> bit_offset;
-
-  /* Put the block back. */
-  blk_put(blk);
-
+  /* TODO */
 #endif /* !STUDENT */
   return used;
 }
@@ -271,36 +214,7 @@ int ext2_inode_used(uint32_t ino) {
     return EINVAL;
   int used = 0;
 #ifdef STUDENT
-
-  /* Which block group?
-   * Remember that inodes start at 1! */
-  size_t block_group = (ino - 1) / inodes_per_group;
-
-  /* Get the right inode bitmap from buffer (!) - so we need to use blk_get.
-   * 1st: blk_get - "When `ino` is zero the buffer refers to filesystem
-   * metadata". 2nd: "its location may be determined by reading the
-   * “bg_inode_bitmap” in its associated group descriptor." -> so it's just an
-   * address aka our idx. */
-  blk_t *blk = blk_get(0, group_desc[block_group].gd_i_bitmap);
-
-  /* Get the raw data of this block. */
-  uint8_t *bitmap = (uint8_t *)blk->b_data;
-
-  /* Check the right bit.
-   * "Each bit represent the current state of a block within that block group,
-   * where 1 means “used” and 0 “free/available”. The first block of this block
-   * group is represented by bit 0 of byte 0, the second by bit 1 of byte 0.
-   * The 8th block is represented by bit 7 (most significant bit) of byte 0
-   * while the 9th block is represented by bit 0 (least significant bit) of
-   * byte 1." */
-  uint32_t bit_index = (ino - 1) % inodes_per_group;
-  uint32_t byte_index = bit_index / 8;
-  uint8_t bit_offset = bit_index % 8;
-  used = (bitmap[byte_index] & (1 << bit_offset)) >> bit_offset;
-
-  /* Put the block back. */
-  blk_put(blk);
-
+  /* TODO */
 #endif /* !STUDENT */
   return used;
 }
@@ -309,33 +223,10 @@ int ext2_inode_used(uint32_t ino) {
  * Returns 0 on success. If i-node is not allocated returns ENOENT. */
 static int ext2_inode_read(off_t ino, ext2_inode_t *inode) {
 #ifdef STUDENT
-
-  int used = ext2_inode_used((uint32_t)ino);
-  if (!used || used == EINVAL)
-    return ENOENT;
-
-  /* Which block group?
-   * Remember that inodes start at 1! */
-  size_t block_group = (ino - 1) / inodes_per_group;
-
-  /* Which inode table entry? */
-  uint32_t inode_table_offset =
-    ((ino - 1) % inodes_per_group) * sizeof(ext2_inode_t);
-  uint32_t block_offset = inode_table_offset / BLKSIZE;
-  uint32_t in_block_offset = inode_table_offset % BLKSIZE;
-
-  /* Get the right block from buffer (!) - so we need to use blk_get.
-   * Afaik i-node table is not technically filesystem metadata, but it's not
-   * data from a file of i-node neither, so I would say that it is still
-   * closer to metadata and should act like one. */
-  blk_t *blk = blk_get(0, group_desc[block_group].gd_i_tables + block_offset);
-
-  /* "Copy" inode. */
-  memcpy(inode, blk->b_data + in_block_offset, sizeof(ext2_inode_t));
-
-  /* Put the block back. */
-  blk_put(blk);
-
+  /* TODO */
+  (void)ino;
+  (void)inode;
+  return ENOENT;
 #endif /* !STUDENT */
   return 0;
 }
@@ -343,23 +234,9 @@ static int ext2_inode_read(off_t ino, ext2_inode_t *inode) {
 /* Returns block pointer `blkidx` from block of `blkaddr` address. */
 static uint32_t ext2_blkptr_read(uint32_t blkaddr, uint32_t blkidx) {
 #ifdef STUDENT
-
-  int used = ext2_block_used(blkaddr);
-  if (!used || used == EINVAL)
-    return 0;
-
-  /* blkaddr is the address of block on block device, so we can use
-   * blk_get with ino = 0. */
-  blk_t *blk = blk_get(0, blkaddr);
-
-  /* Get the block pointer. */
-  uint32_t blkptr = ((uint32_t *)blk->b_data)[blkidx];
-
-  /* Put the block back. */
-  blk_put(blk);
-
-  return blkptr;
-
+  /* TODO */
+  (void)blkaddr;
+  (void)blkidx;
 #endif /* !STUDENT */
   return 0;
 }
@@ -377,61 +254,8 @@ long ext2_blkaddr_read(uint32_t ino, uint32_t blkidx) {
 
     /* Read direct pointers or pointers from indirect blocks. */
 #ifdef STUDENT
-
-  /* Numbers of indirect blocks */
-  uint32_t single_indirect_boundary = EXT2_NADDR + BLK_POINTERS;
-  uint32_t double_indirect_boundary =
-    single_indirect_boundary + BLK_POINTERS * BLK_POINTERS;
-
-  /* direct blocks */
-  if (blkidx < EXT2_NADDR) {
-    return inode.i_blocks[blkidx];
-  }
-  /* single indirect blocks */
-  else if (blkidx < single_indirect_boundary) {
-    /* first level
-     * We move blkidx as if the direct blocks didn't exist and then we calculate
-     * the address. */
-    uint32_t indirect_idx = blkidx - EXT2_NADDR;
-    return ext2_blkptr_read(inode.i_blocks[EXT2_NDADDR], indirect_idx);
-  }
-  /* double indirect blocks */
-  else if (blkidx < double_indirect_boundary) {
-    /* first level
-     * We move blkidx as if neither direct nor single indirect blocks didn't
-     * exist and then we calculate in which "single bucket" we need to look
-     * next. */
-    uint32_t indirect_idx = (blkidx - single_indirect_boundary) / BLK_POINTERS;
-    uint32_t blkidx2 =
-      ext2_blkptr_read(inode.i_blocks[EXT2_NDADDR + 1], indirect_idx);
-
-    /* second level
-     * Modulo makes an illusion as if this "single bucket" was the only bucket,
-     * so indirect_idx is correct. */
-    indirect_idx = (blkidx - single_indirect_boundary) % BLK_POINTERS;
-    return ext2_blkptr_read(blkidx2, indirect_idx);
-  }
-  /* triple indirect blocks - all works as before but we move three levels. */
-  else {
-    /* first level */
-    uint32_t indirect_idx =
-      (blkidx - double_indirect_boundary) / (BLK_POINTERS * BLK_POINTERS);
-    uint32_t blkidx2 =
-      ext2_blkptr_read(inode.i_blocks[EXT2_NDADDR + 2], indirect_idx);
-
-    /* second level */
-    indirect_idx =
-      ((blkidx - double_indirect_boundary) % (BLK_POINTERS * BLK_POINTERS)) /
-      BLK_POINTERS;
-    blkidx2 = ext2_blkptr_read(blkidx2, indirect_idx);
-
-    /* third level */
-    indirect_idx =
-      ((blkidx - double_indirect_boundary) % (BLK_POINTERS * BLK_POINTERS)) %
-      BLK_POINTERS;
-    return ext2_blkptr_read(blkidx2, indirect_idx);
-  }
-
+  /* TODO */
+  (void)ext2_blkptr_read;
 #endif /* !STUDENT */
   return -1;
 }
@@ -443,48 +267,13 @@ long ext2_blkaddr_read(uint32_t ino, uint32_t blkidx) {
  * WARNING: This function assumes that `ino` i-node pointer is valid! */
 int ext2_read(uint32_t ino, void *data, size_t pos, size_t len) {
 #ifdef STUDENT
-
-  /* We need (and can) check if 'pos' and 'len' would have pointed past the last
-   * block of file only for 'ino' that is not 0 aka filesystem metadata. */
-  if (ino) {
-    ext2_inode_t inode;
-    if (ext2_inode_read(ino, &inode))
-      panic("couldn't read inode: %d", ino);
-
-    /* "EINVAL if `pos` and `len` would have pointed past the last block of
-     * file." */
-    if ((pos + len) > inode.i_size)
-      return EINVAL;
-  }
-
-  /* Calculate first and last block index. */
-  uint32_t start_blkidx = pos / BLKSIZE;
-  uint32_t end_blkidx = (pos + len) / BLKSIZE;
-
-  /* Get the data from blocks. */
-  while (start_blkidx <= end_blkidx) {
-    blk_t *blk = blk_get(ino, start_blkidx);
-
-    /* How many bytes from this block? */
-    size_t copy_len = min(len, BLKSIZE - (pos % BLKSIZE));
-
-    /* Copy data. */
-    if (blk == BLK_ZERO) /* "You must not dereference the value!" */
-      memset(data, 0, copy_len);
-    else {
-      memcpy(data, blk->b_data + (pos % BLKSIZE), copy_len);
-      blk_put(blk);
-    }
-
-    /* Prepare for next step in loop. */
-    pos += copy_len;
-    data += copy_len;
-    len -= copy_len;
-    start_blkidx++;
-  }
-
-  return 0;
-
+  /* TODO */
+  (void)ino;
+  (void)data;
+  (void)pos;
+  (void)len;
+  (void)blk_get;
+  (void)blk_put;
 #endif /* !STUDENT */
   return EINVAL;
 }
@@ -498,47 +287,10 @@ int ext2_read(uint32_t ino, void *data, size_t pos, size_t len) {
 
 int ext2_readdir(uint32_t ino, uint32_t *off_p, ext2_dirent_t *de) {
 #ifdef STUDENT
-
-  /* "Assumes that entry offset is 0 or was set by previous call to
-   * `ext2_readdir`." */
-  uint32_t offset;
-  if (!off_p)
-    offset = 0;
-  else
-    offset = *off_p;
-
-  /* Get inode of directory. */
-  ext2_inode_t inode;
-  if (ext2_inode_read(ino, &inode))
-    panic("couldn't read inode: %d", ino);
-
-  /* Get the entry from offset, but if it is empty, skip it and give next one.
-   */
-  while (inode.i_size > offset) {
-    /* Read "metadata" about entry. */
-    if (ext2_read(ino, de, offset, de_name_offset))
-      panic("couldn't read the entry: %d, %d", ino, offset);
-
-    /* If empty -> skip the entry. */
-    if (!de->de_ino) {
-      offset += de->de_reclen;
-      continue;
-    }
-
-    /* If not empty -> this is our entry! Read name. */
-    if (ext2_read(ino, de->de_name, offset + de_name_offset, de->de_namelen))
-      panic("couldn't read name in the entry: %d, %d", ino, offset);
-
-    /* "`de->de_name` must be NUL-terminated." */
-    de->de_name[de->de_namelen] = '\0';
-
-    /* "Assumes that entry offset [...] was set by previous call to
-     * `ext2_readdir`." */
-    *off_p = offset + de->de_reclen;
-
-    return 1;
-  }
-
+  /* TODO */
+  (void)ino;
+  (void)off_p;
+  (void)de;
 #endif /* !STUDENT */
   return 0;
 }
@@ -555,29 +307,9 @@ int ext2_readlink(uint32_t ino, char *buf, size_t buflen) {
 
     /* Check if it's a symlink and read it. */
 #ifdef STUDENT
-
-  /* Check if it's not a symlink
-   * or
-   * if symlink size is bigger than buffer's size.
-   * Why +1? We make it NULL-terminated, so we need it a bit bigger. */
-  if (!(inode.i_mode & EXT2_IFLNK) || inode.i_size + 1 > buflen)
-    return EINVAL;
-
-  /* Read it. */
-  /* If it's short enugh, read it from inode. */
-  if (inode.i_size <= EXT2_MAXSYMLINKLEN)
-    memcpy(buf, inode.i_blocks, inode.i_size);
-  /* Else read it from data block. */
-  else {
-    if (ext2_read(ino, buf, 0, inode.i_size))
-      panic("couldn't read the symlink: %d", ino);
-  }
-
-  /* Make it NULL-terminated. */
-  buf[inode.i_size] = '\0';
-
-  return 0;
-
+  /* TODO */
+  (void)buf;
+  (void)buflen;
 #endif /* !STUDENT */
   return ENOTSUP;
 }
@@ -593,34 +325,8 @@ int ext2_stat(uint32_t ino, struct stat *st) {
 
     /* Convert the metadata! */
 #ifdef STUDENT
-
-  st->st_ino = ino;
-  st->st_mode = inode.i_mode;
-  st->st_nlink = inode.i_nlink;
-  st->st_uid = inode.i_uid;
-  st->st_gid = inode.i_gid;
-  st->st_size = inode.i_size;
-  st->st_blksize = BLKSIZE;
-  st->st_blocks =
-    (inode.i_nblock * BLKSIZE) / 512 + (inode.i_nblock * BLKSIZE % 512 ? 1 : 0);
-  st->st_atime = inode.i_atime;
-  st->st_mtime = inode.i_mtime;
-  st->st_ctime = inode.i_ctime;
-
-  /* We can't get the information about the device from what we have :c
-   * So I will just skip this two steps, but they would look probably like this:
-   *
-   * Set st_dev.
-   *  <somehow>
-   *
-   * Set st_rdev base on file type.
-   * This field is used for special files representing devices (character or
-   * block). For regular files, directories, and symbolic links, st_rdev is
-   * typically set to 0. For special device files (character or block devices),
-   * st_rdev holds the device ID. if( (inode.i_mode & EXT2_IFCHR) ||
-   * (inode.i_mode & EXT2_IFBLK) ) st->st_rdev = st_dev; else st->st_rdev = 0;
-   */
-
+  /* TODO */
+  (void)st;
 #endif /* !STUDENT */
   return ENOTSUP;
 }
@@ -642,24 +348,9 @@ int ext2_lookup(uint32_t ino, const char *name, uint32_t *ino_p,
     return error;
 
 #ifdef STUDENT
-
-  /* Check if 'ino' file is not a directory. */
-  if (!(inode.i_mode & EXT2_IFDIR))
-    return ENOTDIR;
-
-  uint32_t offset = 0;
-  ext2_dirent_t de;
-  /* While there are still entries in directory. */
-  while (ext2_readdir(ino, &offset, &de)) {
-    /* If entry name with name we are looking for are equal. */
-    if (!strcmp(de.de_name, name)) {
-      *ino_p = de.de_ino;
-      *type_p = de.de_type;
-
-      return 0;
-    }
-  }
-
+  /* TODO */
+  (void)ino_p;
+  (void)type_p;
 #endif /* !STUDENT */
 
   return ENOENT;
@@ -703,28 +394,14 @@ int ext2_mount(const char *fspath) {
     /* Load interesting data from superblock into global variables.
      * Read group descriptor table into memory. */
 #ifdef STUDENT
-
-  /* Load interesting data from superblock into global variables. */
-  inodes_per_group = sb.sb_ipg;
-  blocks_per_group = sb.sb_bpg;
-  block_count = sb.sb_bcount;
-  inode_count = sb.sb_icount;
-  first_data_block = sb.sb_first_dblock;
-
-  /* Calculate the number of group descriptors. */
-  group_desc_count =
-    (block_count / blocks_per_group) + (block_count % blocks_per_group ? 1 : 0);
-
-  /* Read group descriptor table into memory. */
-  if (!(group_desc = malloc(group_desc_count * sizeof(ext2_groupdesc_t))))
-    panic("couldn't allocate memory for group descriptor table!\n");
-
-  if (ext2_read(0, group_desc, EXT2_GDOFF,
-                group_desc_count * sizeof(ext2_groupdesc_t)))
-    panic("couldn't load group descriptor table!\n");
-
-  return 0;
-
+  /* TODO */
+  (void)inodes_per_group;
+  (void)blocks_per_group;
+  (void)group_desc_count;
+  (void)block_count;
+  (void)inode_count;
+  (void)first_data_block;
+  (void)group_desc;
 #endif /* !STUDENT */
   return ENOTSUP;
 }
