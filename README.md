@@ -3,7 +3,7 @@ Technology: C\
 Type of project: fill-in the gapps
 
 ### Rules of project
-Only the code in file ext2fs.c in "STUDENT" zones is written from scratch by me. The professor provided everything else.\
+Only the code in file ext2fs.c in "STUDENT" zones is written from scratch by me. The professor provided everything else.
 
 ### How to use it
 make - compile the project\
