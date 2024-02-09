@@ -1,11 +1,3 @@
-/*
- * Oświadczam, że zapoznałem(-am) się z regulaminem prowadzenia zajęć
- * i jestem świadomy(-a) konsekwencji niestosowania się do podanych tam zasad.
- */
-#ifdef STUDENT
-/* Imię i nazwisko, numer indeksu: Kalina Białek, 340152 */
-#endif
-
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -410,8 +402,8 @@ long ext2_blkaddr_read(uint32_t ino, uint32_t blkidx) {
   /* double indirect blocks */
   if (blkidx < double_indirect_boundary) {
     /* first level
-     * We move blkidx as if neither direct nor single indirect blocks didn't
-     * exist and then we calculate in which "single bucket" we need to look
+     * We move blkidx as if neither direct nor single indirect blocks exist 
+     * and then we calculate in which "single bucket" we need to look
      * next. */
     uint32_t indirect_idx = (blkidx - single_indirect_boundary) / BLK_POINTERS;
     uint32_t blkidx2 =
