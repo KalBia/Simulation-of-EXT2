@@ -1,1 +1,11 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/pgt1RmzX)
+## Simulation of EXT2
+Technology: C\
+Type of project: fill-in the gapps
+
+### Rules of project
+Only the code in file ext2fs.c in "STUDENT" zones is written from scratch by me. The professor provided everything else.\
+
+### How to use it
+make - compile the project\
+make format - format all .c files\
+make grade - run tests given by the professor 
